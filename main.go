@@ -20,5 +20,6 @@ func main() {
 	r.GET("/services/:serviceID/versions/:versionID", Recovery(Authenticated(NotImplemented, mockUsers)))
 
 	// run the server without TLS on localhost
+	log.Println("launching server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

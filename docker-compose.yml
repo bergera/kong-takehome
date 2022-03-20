@@ -9,3 +9,9 @@ services:
     environment:
       POSTGRES_USER: kong_takehome
       POSTGRES_PASSWORD: abc123
+    ports:
+      - "8081:5432"
+  web:
+    build: .
+    ports:
+      - "8080:8080"

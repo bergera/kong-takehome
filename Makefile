@@ -13,6 +13,7 @@ help: ## commands help text
 .PHONY: clean
 clean: ## clean workspace and remove build/test artifacts
 	rm -rf bin
+	docker-compose down --rmi local
 
 .PHONY: build
 build: clean ## compile the binary
@@ -30,6 +31,11 @@ test-unit: ## run unit tests
 install: ## install npm dependencies
 	@npm install
 
+.PHONY: docker
+docker: ## run docker containers
+	@docker compose up
+
 .PHONY: test-integration
 test-integration: install ## run integration tests - run server separately first
+	@docker compose up --wait --remove-orphans --force-recreate --build
 	@npm test
