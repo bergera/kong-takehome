@@ -7,6 +7,8 @@ $ make help
 build                          compile the binary
 clean                          clean workspace and remove build/test artifacts
 help                           commands help text
+install                        install npm dependencies
 run                            launch the server locally
+test-integration               run integration tests - run server separately first
 test-unit                      run unit tests
 ```

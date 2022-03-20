@@ -20,8 +20,16 @@ build: clean ## compile the binary
 
 .PHONY: run
 run: ## launch the server locally
-	@${GO_ENV} go run main.go
+	@${GO_ENV} go run . main
 
 .PHONY: test-unit
 test-unit: ## run unit tests
 	@${GO_ENV} go test -v
+
+.PHONY: install
+install: ## install npm dependencies
+	@npm install
+
+.PHONY: test-integration
+test-integration: install ## run integration tests - run server separately first
+	@npm test

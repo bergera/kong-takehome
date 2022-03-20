@@ -1,0 +1,14 @@
+{
+  "name": "kong-takehome",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "npx mocha test.js"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^9.2.2",
+    "supertest": "^6.2.2"
+  }
+}
