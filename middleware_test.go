@@ -94,3 +94,17 @@ func TestAuthenticatedSetsContextValue(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 }
+
+func TestRecovery(t *testing.T) {
+	r := httprouter.New()
+	r.GET("/", Recovery(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		panic("error")
+	}))
+
+	req := httptest.NewRequest("GET", "/", nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 500, w.Result().StatusCode)
+}

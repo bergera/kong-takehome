@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -34,5 +35,19 @@ func Authenticated(next httprouter.Handle, users map[string]struct{}) httprouter
 			// if user ID not found, then respond with 401 Unauthorized
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		}
+	}
+}
+
+// Recovery responds with 500 Internal Server Error in the event of a panic.
+func Recovery(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("recovered from panic: ", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		}()
+
+		next(w, r, p)
 	}
 }

@@ -14,10 +14,10 @@ var mockUsers = map[string]struct{}{"1": {}, "2": {}}
 func main() {
 	// create a new router with named parameters
 	r := httprouter.New()
-	r.GET("/services", Authenticated(NotImplemented, mockUsers))
-	r.GET("/services/:serviceID", Authenticated(NotImplemented, mockUsers))
-	r.GET("/services/:serviceID/versions", Authenticated(NotImplemented, mockUsers))
-	r.GET("/services/:serviceID/versions/:versionID", Authenticated(NotImplemented, mockUsers))
+	r.GET("/services", Recovery(Authenticated(NotImplemented, mockUsers)))
+	r.GET("/services/:serviceID", Recovery(Authenticated(NotImplemented, mockUsers)))
+	r.GET("/services/:serviceID/versions", Recovery(Authenticated(NotImplemented, mockUsers)))
+	r.GET("/services/:serviceID/versions/:versionID", Recovery(Authenticated(NotImplemented, mockUsers)))
 
 	// run the server without TLS on localhost
 	log.Fatal(http.ListenAndServe(":8080", r))
