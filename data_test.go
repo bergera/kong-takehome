@@ -20,12 +20,12 @@ func TestFindServicesForUserSuccess(t *testing.T) {
 		db: db,
 	}
 
-	rows := sqlmock.NewRows([]string{"service_id", "title", "summary", "org_id"}).
-		AddRow("1", "Title 1", "Summary 1", "1").
-		AddRow("2", "Title 2", "Summary 2", "1").
-		AddRow("3", "Title 3", "Summary 3", "1")
+	rows := sqlmock.NewRows([]string{"service_id", "title", "summary", "org_id", "version_count"}).
+		AddRow("1", "Title 1", "Summary 1", "1", "1").
+		AddRow("2", "Title 2", "Summary 2", "1", "1").
+		AddRow("3", "Title 3", "Summary 3", "1", "1")
 
-	mock.ExpectQuery("SELECT (.+) FROM services s JOIN users u ON s.org_id = u.org_id WHERE u.user_id = ?").
+	mock.ExpectQuery("^SELECT (.+) FROM services s (.+) WHERE u.user_id = ?").
 		WillReturnRows(rows)
 
 	services, err := data.FindServicesForUser(context.TODO(), 1)
@@ -33,9 +33,9 @@ func TestFindServicesForUserSuccess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 	assert.Equal(t, 3, len(services))
-	assert.Equal(t, Service{1, "Title 1", "Summary 1", 1}, services[0])
-	assert.Equal(t, Service{2, "Title 2", "Summary 2", 1}, services[1])
-	assert.Equal(t, Service{3, "Title 3", "Summary 3", 1}, services[2])
+	assert.Equal(t, Service{1, "Title 1", "Summary 1", 1, 1}, services[0])
+	assert.Equal(t, Service{2, "Title 2", "Summary 2", 1, 1}, services[1])
+	assert.Equal(t, Service{3, "Title 3", "Summary 3", 1, 1}, services[2])
 }
 
 func TestFindServicesForUserError(t *testing.T) {
@@ -49,7 +49,7 @@ func TestFindServicesForUserError(t *testing.T) {
 		db: db,
 	}
 
-	mock.ExpectQuery("SELECT (.+) FROM services s JOIN users u ON s.org_id = u.org_id WHERE u.user_id = ?").
+	mock.ExpectQuery("^SELECT (.+) FROM services s (.+) WHERE u.user_id = ?").
 		WillReturnError(errors.New("sql error"))
 
 	services, err := data.FindServicesForUser(context.TODO(), 1)

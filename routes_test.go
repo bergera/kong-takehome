@@ -81,14 +81,14 @@ func TestGetServices(t *testing.T) {
 			data: &mockDataService{
 				findServicesForUser: func(ctx context.Context, userID int) ([]Service, error) {
 					return []Service{
-						{1, "Title 1", "Summary 1", 1},
-						{2, "Title 2", "Summary 2", 1},
-						{3, "Title 3", "Summary 3", 1},
+						{1, "Title 1", "Summary 1", 1, 1},
+						{2, "Title 2", "Summary 2", 1, 1},
+						{3, "Title 3", "Summary 3", 1, 1},
 					}, nil
 				},
 			},
 			statusCode: 200,
-			body:       []byte(`{"count":3,"services":[{"serviceId":1,"title":"Title 1","summary":"Summary 1","orgId":1},{"serviceId":2,"title":"Title 2","summary":"Summary 2","orgId":1},{"serviceId":3,"title":"Title 3","summary":"Summary 3","orgId":1}]}`),
+			body:       []byte(`{"count":3,"services":[{"serviceId":1,"title":"Title 1","summary":"Summary 1","orgId":1,"versionCount":1},{"serviceId":2,"title":"Title 2","summary":"Summary 2","orgId":1,"versionCount":1},{"serviceId":3,"title":"Title 3","summary":"Summary 3","orgId":1,"versionCount":1}]}`),
 		},
 	}
 	for _, tc := range testCases {

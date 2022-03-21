@@ -6,18 +6,20 @@ import (
 )
 
 const findServicesForUser = `
-SELECT service_id, title, summary, s.org_id as org_id
+SELECT s.service_id, s.title, s.summary, s.org_id, COUNT(v.version_id) as version_count
 FROM services s 
-JOIN users u
-ON s.org_id = u.org_id
+JOIN users u ON s.org_id = u.org_id
+JOIN versions v ON s.service_id = v.service_id
 WHERE u.user_id = ?
+GROUP BY s.service_id
 `
 
 type Service struct {
-	ServiceID int    `json:"serviceId"`
-	Title     string `json:"title"`
-	Summary   string `json:"summary"`
-	OrgID     int    `json:"orgId"`
+	ServiceID    int    `json:"serviceId"`
+	Title        string `json:"title"`
+	Summary      string `json:"summary"`
+	OrgID        int    `json:"orgId"`
+	VersionCount int    `json:"versionCount"`
 }
 
 type DataService interface {
@@ -37,7 +39,7 @@ func (s *SQLDataService) FindServicesForUser(ctx context.Context, userID int) ([
 	services := make([]Service, 0)
 	for rows.Next() {
 		var svc Service
-		err = rows.Scan(&svc.ServiceID, &svc.Title, &svc.Summary, &svc.OrgID)
+		err = rows.Scan(&svc.ServiceID, &svc.Title, &svc.Summary, &svc.OrgID, &svc.VersionCount)
 		if err != nil {
 			return nil, err
 		}
