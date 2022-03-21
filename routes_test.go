@@ -12,10 +12,10 @@ import (
 )
 
 type mockDataService struct {
-	findServicesForUser func(ctx context.Context, userID int) ([]Service, error)
+	findServicesForUser func(ctx context.Context, userID string) ([]Service, error)
 }
 
-func (mock *mockDataService) FindServicesForUser(ctx context.Context, userID int) ([]Service, error) {
+func (mock *mockDataService) FindServicesForUser(ctx context.Context, userID string) ([]Service, error) {
 	return mock.findServicesForUser(ctx, userID)
 }
 
@@ -51,14 +51,14 @@ func TestGetServices(t *testing.T) {
 		},
 		{
 			desc:       "User ID in context has incorrect data type",
-			ctx:        context.WithValue(context.TODO(), UserIDKey, "foo"),
+			ctx:        context.WithValue(context.TODO(), UserIDKey, 1),
 			statusCode: 500,
 		},
 		{
 			desc: "FindServicesForUser returns error",
-			ctx:  context.WithValue(context.TODO(), UserIDKey, 1),
+			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID int) ([]Service, error) {
+				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
 					return nil, errors.New("data error")
 				},
 			},
@@ -66,9 +66,9 @@ func TestGetServices(t *testing.T) {
 		},
 		{
 			desc: "OK with empty result set",
-			ctx:  context.WithValue(context.TODO(), UserIDKey, 1),
+			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID int) ([]Service, error) {
+				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
 					return []Service{}, nil
 				},
 			},
@@ -77,9 +77,9 @@ func TestGetServices(t *testing.T) {
 		},
 		{
 			desc: "OK with results",
-			ctx:  context.WithValue(context.TODO(), UserIDKey, 1),
+			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID int) ([]Service, error) {
+				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
 					return []Service{
 						{1, "Title 1", "Summary 1", 1, 1},
 						{2, "Title 2", "Summary 2", 1, 1},

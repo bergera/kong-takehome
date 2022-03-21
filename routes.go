@@ -20,7 +20,7 @@ type getServicesResponse struct {
 func (ws *WebServer) GetServices(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := r.Context()
 
-	userID, ok := ctx.Value(UserIDKey).(int)
+	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		fmt.Println("user ID not found in context")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

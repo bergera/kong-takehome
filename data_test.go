@@ -28,7 +28,7 @@ func TestFindServicesForUserSuccess(t *testing.T) {
 	mock.ExpectQuery("^SELECT (.+) FROM services s (.+) WHERE u.user_id = ?").
 		WillReturnRows(rows)
 
-	services, err := data.FindServicesForUser(context.TODO(), 1)
+	services, err := data.FindServicesForUser(context.TODO(), "1")
 
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -52,7 +52,7 @@ func TestFindServicesForUserError(t *testing.T) {
 	mock.ExpectQuery("^SELECT (.+) FROM services s (.+) WHERE u.user_id = ?").
 		WillReturnError(errors.New("sql error"))
 
-	services, err := data.FindServicesForUser(context.TODO(), 1)
+	services, err := data.FindServicesForUser(context.TODO(), "1")
 
 	assert.Error(t, err, "sql error")
 	assert.NoError(t, mock.ExpectationsWereMet())

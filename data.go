@@ -10,7 +10,7 @@ SELECT s.service_id, s.title, s.summary, s.org_id, COUNT(v.version_id) as versio
 FROM services s 
 JOIN users u ON s.org_id = u.org_id
 JOIN versions v ON s.service_id = v.service_id
-WHERE u.user_id = ?
+WHERE u.user_id = $1
 GROUP BY s.service_id
 `
 
@@ -23,14 +23,14 @@ type Service struct {
 }
 
 type DataService interface {
-	FindServicesForUser(ctx context.Context, userID int) ([]Service, error)
+	FindServicesForUser(ctx context.Context, userID string) ([]Service, error)
 }
 
 type SQLDataService struct {
 	db *sql.DB
 }
 
-func (s *SQLDataService) FindServicesForUser(ctx context.Context, userID int) ([]Service, error) {
+func (s *SQLDataService) FindServicesForUser(ctx context.Context, userID string) ([]Service, error) {
 	rows, err := s.db.Query(findServicesForUser, userID)
 	if err != nil {
 		return nil, err
