@@ -8,10 +8,13 @@ import (
 )
 
 const findServicesSQL = `
-SELECT s.service_id, s.title, s.summary, s.org_id, COUNT(v.version_id) as version_count
-FROM services s 
-JOIN users u ON s.org_id = u.org_id
-JOIN versions v ON s.service_id = v.service_id
+SELECT s.service_id, s.title,
+s.summary,
+s.org_id,
+COUNT(v.version_id) as version_count
+FROM services s
+    JOIN users u ON s.org_id = u.org_id
+    JOIN versions v ON s.service_id = v.service_id
 WHERE u.user_id = $1
 GROUP BY s.service_id
 ORDER BY s.service_id ASC
@@ -39,27 +42,31 @@ LIMIT $2 OFFSET $3
 
 const getServiceSQL = `
 SELECT s.service_id, s.title, s.summary, s.org_id
-FROM services s 
-JOIN users u ON s.org_id = u.org_id
-WHERE u.user_id = $1 AND s.service_id = $2
+FROM services s
+    JOIN users u ON s.org_id = u.org_id
+WHERE u.user_id = $1
+    AND s.service_id = $2
 `
 
 const findVersionsForServiceSQL = `
 SELECT v.service_id, v.version_id, v.summary
 FROM versions v
-JOIN services s ON s.service_id = v.service_id
-JOIN users u ON s.org_id = u.org_id
-WHERE u.user_id = $1 AND v.service_id = $2
-ORDER BY v.service_id ASC, v.version_id ASC
+    JOIN services s ON s.service_id = v.service_id
+    JOIN users u ON s.org_id = u.org_id
+WHERE u.user_id = $1
+    AND v.service_id = $2
+ORDER BY v.service_id ASC,
+    v.version_id ASC
 LIMIT $3 OFFSET $4
 `
 
 const findVersionSQL = `
 SELECT v.service_id, v.version_id, v.summary
 FROM versions v
-JOIN services s ON s.service_id = v.service_id
-JOIN users u ON s.org_id = u.org_id
-WHERE u.user_id = $1 AND v.service_id = $2 AND v.version_id = $3
+    JOIN services s ON s.service_id = v.service_id
+    JOIN users u ON s.org_id = u.org_id
+WHERE u.user_id = $1
+    AND v.service_id = $2 AND v.version_id = $3
 `
 
 type Service struct {
@@ -76,17 +83,32 @@ type Version struct {
 	Summary   string `json:"summary"`
 }
 
+// DataService is the interface for performing database operations. All operations expect the provided
+// context to contain the authenticated user's user ID value.
 type DataService interface {
+	// FindServices returns a paginated list of all services the user has access to.
 	FindServices(ctx context.Context, limit, offset int) ([]Service, error)
+
+	// SearchServices returns a paginated list of all services matching the given query which the user has access to.
 	SearchServices(ctx context.Context, query string, limit, offset int) ([]Service, error)
+
+	// FindServicesByID returns a single service or nil if not found.
 	FindServiceByID(ctx context.Context, serviceID string) (*Service, error)
+
+	// FindVersionsForService returns a paginated list of versions for the given service.
 	FindVersionsForService(ctx context.Context, serviceID string, limit, offset int) ([]Version, error)
+
+	// FindVersionByID returns a single version or nil if not found.
 	FindVersionByID(ctx context.Context, serviceID string, versionID string) (*Version, error)
 }
 
+// SQLDataService implements the DataService interface
 type SQLDataService struct {
 	db *sql.DB
 }
+
+// interface compliance assertion
+var _ DataService = &SQLDataService{}
 
 func (s *SQLDataService) FindServices(ctx context.Context, limit, offset int) ([]Service, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)

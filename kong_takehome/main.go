@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
@@ -14,11 +16,14 @@ import (
 var mockUsers = map[string]struct{}{"1": {}, "2": {}, "3": {}, "4": {}}
 
 func main() {
-	db, err := sql.Open("postgres", "host=db user=kong_takehome password=abc123 dbname=kong_takehome sslmode=disable")
+	// establish the database connection parameters
+	dsn := fmt.Sprintf("host=db user=kong_takehome password=%s dbname=kong_takehome sslmode=disable", os.Getenv("DB_PASSWORD"))
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// create our web server object which will hold shared dependencies
 	ws := &WebServer{
 		data: &SQLDataService{
 			db: db,

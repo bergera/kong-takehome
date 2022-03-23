@@ -13,5 +13,7 @@ services:
       - "8081:5432"
   web:
     build: .
+    environment:
+      DB_PASSWORD: abc123
     ports:
       - "8080:8080"

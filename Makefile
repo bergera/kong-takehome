@@ -36,6 +36,7 @@ docker: ## run docker containers
 	@docker compose up
 
 .PHONY: test-integration
-test-integration: install ## run integration tests - run server separately first
+test-integration: install ## run integration tests
 	@docker compose up --wait --remove-orphans --force-recreate --build
+	@sleep 1
 	@npm test
