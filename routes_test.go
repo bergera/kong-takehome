@@ -13,6 +13,7 @@ import (
 
 type mockDataService struct {
 	findServices           func(ctx context.Context, limit, offset int) ([]Service, error)
+	searchServices         func(ctx context.Context, query string, limit, offset int) ([]Service, error)
 	findVersionsForService func(ctx context.Context, serviceID string, limit, offset int) ([]Version, error)
 	findServiceByID        func(ctx context.Context, serviceID string) (*Service, error)
 	findVersionByID        func(ctx context.Context, serviceID string, versionID string) (*Version, error)
@@ -20,6 +21,9 @@ type mockDataService struct {
 
 func (mock *mockDataService) FindServices(ctx context.Context, limit, offset int) ([]Service, error) {
 	return mock.findServices(ctx, limit, offset)
+}
+func (mock *mockDataService) SearchServices(ctx context.Context, query string, limit, offset int) ([]Service, error) {
+	return mock.searchServices(ctx, query, limit, offset)
 }
 
 func (mock *mockDataService) FindVersionsForService(ctx context.Context, serviceID string, limit, offset int) ([]Version, error) {

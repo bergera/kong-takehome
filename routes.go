@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -70,11 +71,30 @@ func (ws *WebServer) GetServices(w http.ResponseWriter, r *http.Request, p httpr
 		}
 	}
 
-	services, err := ws.data.FindServices(ctx, limit, offset)
-	if err != nil {
-		fmt.Println("query failed: ", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+	var services []Service
+
+	if r.URL.Query().Has("q") {
+		var err error
+		query, err := url.QueryUnescape(strings.TrimSpace(r.URL.Query().Get("q")))
+		if err != nil {
+			fmt.Println("unable to parse query string: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		services, err = ws.data.SearchServices(ctx, query, limit, offset)
+		if err != nil {
+			fmt.Println("query failed: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		var err error
+		services, err = ws.data.FindServices(ctx, limit, offset)
+		if err != nil {
+			fmt.Println("query failed: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	resp := getServicesResponse{

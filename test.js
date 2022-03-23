@@ -88,19 +88,17 @@ describe("GET /services", function () {
   });
 
   it("should return page 2", function (done) {
-    const count = 65;
     const limit = 5;
     const offset = 5;
     server
       .get(`/services?limit=${limit}&offset=${offset}`)
-      .query("limit", limit)
-      .query("offset", offset)
       .set("X-User-Id", "1")
       .expect(200)
       .end(function (err, res) {
         if (err) {
           done(err);
         }
+        console.log(res);
         expect(res.body).to.have.property("count");
         expect(res.body).to.have.property("limit");
         expect(res.body).to.have.property("offset");
@@ -115,6 +113,24 @@ describe("GET /services", function () {
         expect(res.body.services[0]).to.have.property("versionCount");
         expect(res.body.services[0]).to.have.property("title");
         expect(res.body.services[0]).to.have.property("summary");
+        done();
+      });
+  });
+
+  it("should match 'southern' and 'southwest' for query 'south'", function (done) {
+    server
+      .get(`/services?q=south`)
+      .set("X-User-Id", "1")
+      .expect(200)
+      .end(function (err, res) {
+        if (err) {
+          done(err);
+        }
+        expect(res.body).to.have.property("services");
+        expect(res.body.services).not.to.be.empty;
+        expect(res.body.count).to.equal(2);
+        expect(res.body.services[0].serviceId).to.equal("24");
+        expect(res.body.services[1].serviceId).to.equal("31");
         done();
       });
   });

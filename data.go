@@ -14,6 +14,26 @@ JOIN users u ON s.org_id = u.org_id
 JOIN versions v ON s.service_id = v.service_id
 WHERE u.user_id = $1
 GROUP BY s.service_id
+ORDER BY s.service_id ASC
+LIMIT $2 OFFSET $3
+`
+
+const searchServicesSQL = `
+SELECT s.service_id,
+    s.title,
+    s.summary,
+    s.org_id,
+    COUNT(v.version_id) as version_count
+FROM services s
+    JOIN users u ON s.org_id = u.org_id
+    JOIN versions v ON s.service_id = v.service_id
+WHERE u.user_id = $1
+    AND (
+        s.title ILIKE $4
+        OR s.summary ILIKE $4
+    )
+GROUP BY s.service_id
+ORDER BY s.service_id ASC
 LIMIT $2 OFFSET $3
 `
 
@@ -30,6 +50,7 @@ FROM versions v
 JOIN services s ON s.service_id = v.service_id
 JOIN users u ON s.org_id = u.org_id
 WHERE u.user_id = $1 AND v.service_id = $2
+ORDER BY v.service_id ASC, v.version_id ASC
 LIMIT $3 OFFSET $4
 `
 
@@ -57,6 +78,7 @@ type Version struct {
 
 type DataService interface {
 	FindServices(ctx context.Context, limit, offset int) ([]Service, error)
+	SearchServices(ctx context.Context, query string, limit, offset int) ([]Service, error)
 	FindServiceByID(ctx context.Context, serviceID string) (*Service, error)
 	FindVersionsForService(ctx context.Context, serviceID string, limit, offset int) ([]Version, error)
 	FindVersionByID(ctx context.Context, serviceID string, versionID string) (*Version, error)
@@ -74,6 +96,38 @@ func (s *SQLDataService) FindServices(ctx context.Context, limit, offset int) ([
 	}
 
 	rows, err := s.db.QueryContext(ctx, findServicesSQL, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]Service, 0)
+	for rows.Next() {
+		var svc Service
+		err = rows.Scan(&svc.ServiceID, &svc.Title, &svc.Summary, &svc.OrgID, &svc.VersionCount)
+		if err != nil {
+			return nil, err
+		}
+		services = append(services, svc)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	if err = rows.Close(); err != nil {
+		return nil, err
+	}
+
+	return services, nil
+}
+
+func (s *SQLDataService) SearchServices(ctx context.Context, query string, limit, offset int) ([]Service, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		fmt.Println("user ID not found in context")
+		return nil, errors.New("user ID not found in context")
+	}
+
+	query = fmt.Sprintf("%%%s%%", query)
+	rows, err := s.db.QueryContext(ctx, searchServicesSQL, userID, limit, offset, query)
 	if err != nil {
 		return nil, err
 	}
