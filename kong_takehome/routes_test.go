@@ -125,7 +125,6 @@ func TestGetServices(t *testing.T) {
 			}
 			if tc.body != nil {
 				body, _ := io.ReadAll(res.Body)
-				t.Log(string(body))
 				res.Body.Close()
 				assert.Equal(t, tc.body, body)
 			}
