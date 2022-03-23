@@ -28,9 +28,9 @@ func main() {
 	// create a new router with named parameters
 	r := httprouter.New()
 	r.GET("/services", Recovery(Authenticated(ws.GetServices, mockUsers)))
-	r.GET("/services/:serviceID", Recovery(Authenticated(NotImplemented, mockUsers)))
-	r.GET("/services/:serviceID/versions", Recovery(Authenticated(NotImplemented, mockUsers)))
-	r.GET("/services/:serviceID/versions/:versionID", Recovery(Authenticated(NotImplemented, mockUsers)))
+	r.GET("/services/:serviceID", Recovery(Authenticated(ws.GetService, mockUsers)))
+	r.GET("/services/:serviceID/versions", Recovery(Authenticated(ws.GetServiceVersions, mockUsers)))
+	r.GET("/services/:serviceID/versions/:versionID", Recovery(Authenticated(ws.GetVersion, mockUsers)))
 
 	// run the server without TLS on localhost
 	log.Println("launching server on :8080")

@@ -12,11 +12,26 @@ import (
 )
 
 type mockDataService struct {
-	findServicesForUser func(ctx context.Context, userID string) ([]Service, error)
+	findServices           func(ctx context.Context) ([]Service, error)
+	findVersionsForService func(ctx context.Context, serviceID string) ([]Version, error)
+	findServiceByID        func(ctx context.Context, serviceID string) (*Service, error)
+	findVersionByID        func(ctx context.Context, serviceID string, versionID string) (*Version, error)
 }
 
-func (mock *mockDataService) FindServicesForUser(ctx context.Context, userID string) ([]Service, error) {
-	return mock.findServicesForUser(ctx, userID)
+func (mock *mockDataService) FindServices(ctx context.Context) ([]Service, error) {
+	return mock.findServices(ctx)
+}
+
+func (mock *mockDataService) FindVersionsForService(ctx context.Context, serviceID string) ([]Version, error) {
+	return mock.findVersionsForService(ctx, serviceID)
+}
+
+func (mock *mockDataService) FindServiceByID(ctx context.Context, serviceID string) (*Service, error) {
+	return mock.FindServiceByID(ctx, serviceID)
+}
+
+func (mock *mockDataService) FindVersionByID(ctx context.Context, serviceID string, versionID string) (*Version, error) {
+	return mock.findVersionByID(ctx, serviceID, versionID)
 }
 
 func TestNotImplemented(t *testing.T) {
@@ -45,20 +60,10 @@ func TestGetServices(t *testing.T) {
 		contentType *string
 	}{
 		{
-			desc:       "User ID not found in context",
-			ctx:        context.TODO(),
-			statusCode: 500,
-		},
-		{
-			desc:       "User ID in context has incorrect data type",
-			ctx:        context.WithValue(context.TODO(), UserIDKey, 1),
-			statusCode: 500,
-		},
-		{
-			desc: "FindServicesForUser returns error",
+			desc: "FindServices returns error",
 			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
+				findServices: func(ctx context.Context) ([]Service, error) {
 					return nil, errors.New("data error")
 				},
 			},
@@ -68,7 +73,7 @@ func TestGetServices(t *testing.T) {
 			desc: "OK with empty result set",
 			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
+				findServices: func(ctx context.Context) ([]Service, error) {
 					return []Service{}, nil
 				},
 			},
@@ -79,16 +84,16 @@ func TestGetServices(t *testing.T) {
 			desc: "OK with results",
 			ctx:  context.WithValue(context.TODO(), UserIDKey, "1"),
 			data: &mockDataService{
-				findServicesForUser: func(ctx context.Context, userID string) ([]Service, error) {
+				findServices: func(ctx context.Context) ([]Service, error) {
 					return []Service{
-						{1, "Title 1", "Summary 1", 1, 1},
-						{2, "Title 2", "Summary 2", 1, 1},
-						{3, "Title 3", "Summary 3", 1, 1},
+						{"1", "Title 1", "Summary 1", "1", 1},
+						{"2", "Title 2", "Summary 2", "1", 1},
+						{"3", "Title 3", "Summary 3", "1", 1},
 					}, nil
 				},
 			},
 			statusCode: 200,
-			body:       []byte(`{"count":3,"services":[{"serviceId":1,"title":"Title 1","summary":"Summary 1","orgId":1,"versionCount":1},{"serviceId":2,"title":"Title 2","summary":"Summary 2","orgId":1,"versionCount":1},{"serviceId":3,"title":"Title 3","summary":"Summary 3","orgId":1,"versionCount":1}]}`),
+			body:       []byte(`{"count":3,"services":[{"serviceId":"1","title":"Title 1","summary":"Summary 1","orgId":"1","versionCount":1},{"serviceId":"2","title":"Title 2","summary":"Summary 2","orgId":"1","versionCount":1},{"serviceId":"3","title":"Title 3","summary":"Summary 3","orgId":"1","versionCount":1}]}`),
 		},
 	}
 	for _, tc := range testCases {
