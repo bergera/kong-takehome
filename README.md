@@ -3,7 +3,7 @@
 Prerequisites:
 
 - Docker
-- Node
+- npm
 - Go 1.17
 
 I use macOS so I've included a Makefile for easy commands. If you are on Windows or another OS that doesn't play nice with make, you'll need to run commands supported by your system.
@@ -12,6 +12,7 @@ I use macOS so I've included a Makefile for easy commands. If you are on Windows
 $ make help
 build                          compile the binary
 clean                          clean workspace and remove build/test artifacts
+docker                         run docker containers
 help                           commands help text
 install                        install npm dependencies
 run                            launch the server locally
