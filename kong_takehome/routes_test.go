@@ -82,7 +82,7 @@ func TestGetServices(t *testing.T) {
 				},
 			},
 			statusCode: 200,
-			body:       []byte(`{"count":0,"services":[]}`),
+			body:       []byte(`{"count":0,"limit":5,"offset":0,"services":[]}`),
 		},
 		{
 			desc: "OK with results",
@@ -97,7 +97,7 @@ func TestGetServices(t *testing.T) {
 				},
 			},
 			statusCode: 200,
-			body:       []byte(`{"count":3,"services":[{"serviceId":"1","title":"Title 1","summary":"Summary 1","orgId":"1","versionCount":1},{"serviceId":"2","title":"Title 2","summary":"Summary 2","orgId":"1","versionCount":1},{"serviceId":"3","title":"Title 3","summary":"Summary 3","orgId":"1","versionCount":1}]}`),
+			body:       []byte(`{"count":3,"limit":5,"offset":0,"services":[{"serviceId":"1","title":"Title 1","summary":"Summary 1","orgId":"1","versionCount":1},{"serviceId":"2","title":"Title 2","summary":"Summary 2","orgId":"1","versionCount":1},{"serviceId":"3","title":"Title 3","summary":"Summary 3","orgId":"1","versionCount":1}]}`),
 		},
 	}
 	for _, tc := range testCases {

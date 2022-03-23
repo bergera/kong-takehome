@@ -17,15 +17,15 @@ clean: ## clean workspace and remove build/test artifacts
 
 .PHONY: build
 build: clean ## compile the binary
-	${GO_ENV} go build -o bin/main
+	${GO_ENV} go build -o bin/main ./kong_takehome/*
 
 .PHONY: run
 run: ## launch the server locally
-	@${GO_ENV} go run . main
+	@${GO_ENV} go run ./kong_takehome
 
 .PHONY: test-unit
 test-unit: ## run unit tests
-	@${GO_ENV} go test -v
+	@${GO_ENV} go test -v ./kong_takehome
 
 .PHONY: install
 install: ## install npm dependencies
