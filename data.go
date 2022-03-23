@@ -14,6 +14,7 @@ JOIN users u ON s.org_id = u.org_id
 JOIN versions v ON s.service_id = v.service_id
 WHERE u.user_id = $1
 GROUP BY s.service_id
+LIMIT $2 OFFSET $3
 `
 
 const getServiceSQL = `
@@ -29,6 +30,7 @@ FROM versions v
 JOIN services s ON s.service_id = v.service_id
 JOIN users u ON s.org_id = u.org_id
 WHERE u.user_id = $1 AND v.service_id = $2
+LIMIT $3 OFFSET $4
 `
 
 const findVersionSQL = `
@@ -54,9 +56,9 @@ type Version struct {
 }
 
 type DataService interface {
-	FindServices(ctx context.Context) ([]Service, error)
+	FindServices(ctx context.Context, limit, offset int) ([]Service, error)
 	FindServiceByID(ctx context.Context, serviceID string) (*Service, error)
-	FindVersionsForService(ctx context.Context, serviceID string) ([]Version, error)
+	FindVersionsForService(ctx context.Context, serviceID string, limit, offset int) ([]Version, error)
 	FindVersionByID(ctx context.Context, serviceID string, versionID string) (*Version, error)
 }
 
@@ -64,14 +66,14 @@ type SQLDataService struct {
 	db *sql.DB
 }
 
-func (s *SQLDataService) FindServices(ctx context.Context) ([]Service, error) {
+func (s *SQLDataService) FindServices(ctx context.Context, limit, offset int) ([]Service, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		fmt.Println("user ID not found in context")
 		return nil, errors.New("user ID not found in context")
 	}
 
-	rows, err := s.db.QueryContext(ctx, findServicesSQL, userID)
+	rows, err := s.db.QueryContext(ctx, findServicesSQL, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -135,14 +137,14 @@ func (s *SQLDataService) FindVersionByID(ctx context.Context, serviceID string, 
 	return &v, err
 }
 
-func (s *SQLDataService) FindVersionsForService(ctx context.Context, serviceID string) ([]Version, error) {
+func (s *SQLDataService) FindVersionsForService(ctx context.Context, serviceID string, limit, offset int) ([]Version, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		fmt.Println("user ID not found in context")
 		return nil, errors.New("user ID not found in context")
 	}
 
-	rows, err := s.db.QueryContext(ctx, findVersionsForServiceSQL, userID, serviceID)
+	rows, err := s.db.QueryContext(ctx, findVersionsForServiceSQL, userID, serviceID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

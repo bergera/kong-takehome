@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,6 +16,8 @@ type WebServer struct {
 
 type getServicesResponse struct {
 	Count    int       `json:"count"`
+	Limit    int       `json:"limit"`
+	Offset   int       `json:"offset"`
 	Services []Service `json:"services"`
 }
 
@@ -29,6 +33,8 @@ type getServiceResponse struct {
 type getServiceVersionsResponse struct {
 	ServiceID string    `json:"serviceId"`
 	Count     int       `json:"count"`
+	Limit     int       `json:"limit"`
+	Offset    int       `json:"offset"`
 	Versions  []Version `json:"versions"`
 }
 
@@ -41,7 +47,30 @@ type getVersionResponse struct {
 func (ws *WebServer) GetServices(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := r.Context()
 
-	services, err := ws.data.FindServices(ctx)
+	limit := 5
+	offset := 0
+
+	if r.URL.Query().Has("limit") {
+		var err error
+		limit, err = strconv.Atoi(strings.TrimSpace(r.URL.Query().Get("limit")))
+		if err != nil {
+			fmt.Println("failed parsing limit: ", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
+
+	if r.URL.Query().Has("offset") {
+		var err error
+		offset, err = strconv.Atoi(strings.TrimSpace(r.URL.Query().Get("offset")))
+		if err != nil {
+			fmt.Println("failed parsing offset: ", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
+
+	services, err := ws.data.FindServices(ctx, limit, offset)
 	if err != nil {
 		fmt.Println("query failed: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -51,6 +80,8 @@ func (ws *WebServer) GetServices(w http.ResponseWriter, r *http.Request, p httpr
 	resp := getServicesResponse{
 		Count:    len(services),
 		Services: services,
+		Limit:    limit,
+		Offset:   offset,
 	}
 	body, err := json.Marshal(&resp)
 	if err != nil {
@@ -78,7 +109,7 @@ func (ws *WebServer) GetService(w http.ResponseWriter, r *http.Request, p httpro
 		return
 	}
 
-	versions, err := ws.data.FindVersionsForService(ctx, serviceID)
+	versions, err := ws.data.FindVersionsForService(ctx, serviceID, 5, 0)
 	if err != nil {
 		fmt.Println("query failed: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -108,6 +139,29 @@ func (ws *WebServer) GetServiceVersions(w http.ResponseWriter, r *http.Request, 
 	ctx := r.Context()
 	serviceID := p.ByName("serviceID")
 
+	limit := 5
+	offset := 0
+
+	if r.URL.Query().Has("limit") {
+		var err error
+		limit, err = strconv.Atoi(strings.TrimSpace(r.URL.Query().Get("limit")))
+		if err != nil {
+			fmt.Println("failed parsing limit: ", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
+
+	if r.URL.Query().Has("offset") {
+		var err error
+		offset, err = strconv.Atoi(strings.TrimSpace(r.URL.Query().Get("offset")))
+		if err != nil {
+			fmt.Println("failed parsing offset: ", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
+
 	service, err := ws.data.FindServiceByID(ctx, serviceID)
 	if err != nil {
 		fmt.Println("query failed: ", err)
@@ -119,7 +173,7 @@ func (ws *WebServer) GetServiceVersions(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	versions, err := ws.data.FindVersionsForService(ctx, serviceID)
+	versions, err := ws.data.FindVersionsForService(ctx, serviceID, limit, offset)
 	if err != nil {
 		fmt.Println("query failed: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -129,6 +183,8 @@ func (ws *WebServer) GetServiceVersions(w http.ResponseWriter, r *http.Request, 
 	resp := getServiceVersionsResponse{
 		ServiceID: serviceID,
 		Count:     len(versions),
+		Limit:     limit,
+		Offset:    offset,
 		Versions:  versions,
 	}
 	body, err := json.Marshal(&resp)

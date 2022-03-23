@@ -31,7 +31,7 @@ describe("GET /services", function () {
       });
   });
 
-  it("should return results for org_id=1", function (done) {
+  it("should return 200 OK with default limit and offset", function (done) {
     server
       .get("/services")
       .set("X-User-Id", "1")
@@ -42,9 +42,75 @@ describe("GET /services", function () {
         }
         expect(res.body).to.have.property("count");
         expect(res.body).to.have.property("services");
+        expect(res.body.count).to.equal(5);
+        expect(res.body.limit).to.equal(5);
+        expect(res.body.offset).to.equal(0);
         expect(res.body.services).not.to.be.empty;
         expect(res.body.count).to.equal(res.body.services.length);
         expect(res.body.services[0]).to.have.property("serviceId");
+        expect(res.body.services[0].serviceId).to.equal("1");
+        expect(res.body.services[0]).to.have.property("orgId");
+        expect(res.body.services[0]).to.have.property("versionCount");
+        expect(res.body.services[0]).to.have.property("title");
+        expect(res.body.services[0]).to.have.property("summary");
+        done();
+      });
+  });
+
+  it("should return page 1", function (done) {
+    const count = 65;
+    const limit = 5;
+    const offset = 0;
+    server
+      .get(`/services?limit=${limit}&offset=${offset}`)
+      .set("X-User-Id", "1")
+      .expect(200)
+      .end(function (err, res) {
+        if (err) {
+          done(err);
+        }
+        expect(res.body).to.have.property("count");
+        expect(res.body).to.have.property("limit");
+        expect(res.body).to.have.property("offset");
+        expect(res.body).to.have.property("services");
+        expect(res.body.services).not.to.be.empty;
+        expect(res.body.count).to.equal(limit);
+        expect(res.body.limit).to.equal(limit);
+        expect(res.body.offset).to.equal(offset);
+        expect(res.body.services[0]).to.have.property("serviceId");
+        expect(res.body.services[0].serviceId).to.equal("1");
+        expect(res.body.services[0]).to.have.property("orgId");
+        expect(res.body.services[0]).to.have.property("versionCount");
+        expect(res.body.services[0]).to.have.property("title");
+        expect(res.body.services[0]).to.have.property("summary");
+        done();
+      });
+  });
+
+  it("should return page 2", function (done) {
+    const count = 65;
+    const limit = 5;
+    const offset = 5;
+    server
+      .get(`/services?limit=${limit}&offset=${offset}`)
+      .query("limit", limit)
+      .query("offset", offset)
+      .set("X-User-Id", "1")
+      .expect(200)
+      .end(function (err, res) {
+        if (err) {
+          done(err);
+        }
+        expect(res.body).to.have.property("count");
+        expect(res.body).to.have.property("limit");
+        expect(res.body).to.have.property("offset");
+        expect(res.body).to.have.property("services");
+        expect(res.body.services).not.to.be.empty;
+        expect(res.body.count).to.equal(limit);
+        expect(res.body.limit).to.equal(limit);
+        expect(res.body.offset).to.equal(offset);
+        expect(res.body.services[0]).to.have.property("serviceId");
+        expect(res.body.services[0].serviceId).to.equal("6");
         expect(res.body.services[0]).to.have.property("orgId");
         expect(res.body.services[0]).to.have.property("versionCount");
         expect(res.body.services[0]).to.have.property("title");
@@ -121,9 +187,9 @@ describe("GET /services/:serviceID/versions", function () {
       .end(done);
   });
 
-  it("should return 200 OK when the service exists and belongs to user's org", function (done) {
+  it("should return 200 OK with default limit and offset", function (done) {
     server
-      .get("/services/1/versions")
+      .get("/services/6/versions")
       .set("X-User-Id", "1")
       .expect(200)
       .end(function (err, res) {
@@ -133,10 +199,66 @@ describe("GET /services/:serviceID/versions", function () {
         expect(res.body).to.have.property("serviceId");
         expect(res.body).to.have.property("count");
         expect(res.body).to.have.property("versions");
+        expect(res.body.count).to.equal(5);
+        expect(res.body.limit).to.equal(5);
+        expect(res.body.offset).to.equal(0);
         expect(res.body.versions).not.to.be.empty;
         expect(res.body.count).to.equal(res.body.versions.length);
         expect(res.body.versions[0]).to.have.property("serviceId");
         expect(res.body.versions[0]).to.have.property("versionId");
+        expect(res.body.versions[0].versionId).to.equal("1");
+        expect(res.body.versions[0]).to.have.property("summary");
+        done();
+      });
+  });
+
+  it("should return page 1", function (done) {
+    const limit = 5;
+    const offset = 0;
+    server
+      .get(`/services/6/versions?limit=${limit}&offset=${offset}`)
+      .set("X-User-Id", "1")
+      .expect(200)
+      .end(function (err, res) {
+        if (err) {
+          done(err);
+        }
+        expect(res.body).to.have.property("serviceId");
+        expect(res.body).to.have.property("count");
+        expect(res.body).to.have.property("versions");
+        expect(res.body.limit).to.equal(limit);
+        expect(res.body.offset).to.equal(offset);
+        expect(res.body.versions).not.to.be.empty;
+        expect(res.body.count).to.equal(res.body.versions.length);
+        expect(res.body.versions[0]).to.have.property("serviceId");
+        expect(res.body.versions[0]).to.have.property("versionId");
+        expect(res.body.versions[0].versionId).to.equal("1");
+        expect(res.body.versions[0]).to.have.property("summary");
+        done();
+      });
+  });
+
+  it("should return page 2", function (done) {
+    const limit = 5;
+    const offset = 5;
+    server
+      .get(`/services/6/versions?limit=${limit}&offset=${offset}`)
+      .set("X-User-Id", "1")
+      .expect(200)
+      .end(function (err, res) {
+        if (err) {
+          done(err);
+        }
+        expect(res.body).to.have.property("serviceId");
+        expect(res.body).to.have.property("count");
+        expect(res.body).to.have.property("versions");
+        expect(res.body.limit).to.equal(limit);
+        expect(res.body.offset).to.equal(offset);
+        expect(res.body.versions).not.to.be.empty;
+        expect(res.body.count).to.equal(res.body.versions.length);
+        expect(res.body.versions[0]).to.have.property("serviceId");
+        expect(res.body.versions[0]).to.have.property("versionId");
+        expect(res.body.versions[0].versionId).to.equal("6");
         expect(res.body.versions[0]).to.have.property("summary");
         done();
       });

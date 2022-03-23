@@ -29,7 +29,7 @@ func TestFindServicesSuccess(t *testing.T) {
 		WillReturnRows(rows)
 
 	ctx := context.WithValue(context.TODO(), UserIDKey, "1")
-	services, err := data.FindServices(ctx)
+	services, err := data.FindServices(ctx, 3, 0)
 
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -54,7 +54,7 @@ func TestFindServicesError(t *testing.T) {
 		WillReturnError(errors.New("sql error"))
 
 	ctx := context.WithValue(context.TODO(), UserIDKey, "1")
-	services, err := data.FindServices(ctx)
+	services, err := data.FindServices(ctx, 1, 1)
 
 	assert.Error(t, err, "sql error")
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -81,7 +81,7 @@ func TestFindVersionsForServiceSuccess(t *testing.T) {
 		WillReturnRows(rows)
 
 	ctx := context.WithValue(context.TODO(), UserIDKey, "1")
-	versions, err := data.FindVersionsForService(ctx, "1")
+	versions, err := data.FindVersionsForService(ctx, "1", 3, 0)
 
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -106,7 +106,7 @@ func TestFindVersionsForServiceError(t *testing.T) {
 		WillReturnError(errors.New("sql error"))
 
 	ctx := context.WithValue(context.TODO(), UserIDKey, "1")
-	services, err := data.FindVersionsForService(ctx, "1")
+	services, err := data.FindVersionsForService(ctx, "1", 5, 0)
 
 	assert.Error(t, err, "sql error")
 	assert.NoError(t, mock.ExpectationsWereMet())
